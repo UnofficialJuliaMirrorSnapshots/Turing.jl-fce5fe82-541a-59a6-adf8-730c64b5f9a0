@@ -85,8 +85,11 @@ include("is.jl")
 include("AdvancedSMC.jl")
 include("gibbs.jl")
 
+getspace(::IS) = ()
+getspace(::Type{<:IS}) = ()
 for alg in (:SMC, :PG, :PMMH, :IPMCMC, :MH)
     @eval getspace(::$alg{space}) where {space} = space
+    @eval getspace(::Type{<:$alg{space}}) where {space} = space
     @eval getspace(::Type{<:$alg{space}}) where {space} = space
 end
 for alg in (:HMC, :HMCDA, :NUTS, :SGLD, :SGHMC)
@@ -247,9 +250,6 @@ end
 # VarInfo, combined with spl.info, to Sample
 function Sample(vi::AbstractVarInfo, spl::Sampler)
     s = Sample(vi)
-    if haskey(spl.info, :adaptor)
-        s.value[:lf_eps] = AHMC.getϵ(spl.info[:adaptor])
-    end
     if haskey(spl.info, :eval_num)
         s.value[:eval_num] = spl.info[:eval_num]
     end
