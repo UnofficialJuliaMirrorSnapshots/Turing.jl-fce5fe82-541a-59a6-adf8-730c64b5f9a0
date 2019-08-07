@@ -191,7 +191,7 @@ function NUTS{AD}(
     n_adapts::Int,
     δ::Float64,
     space::Symbol...;
-    max_depth::Int=5,
+    max_depth::Int=10,
     Δ_max::Float64=1000.0,
     init_ϵ::Float64=0.0,
     metricT=AHMC.DiagEuclideanMetric
@@ -202,7 +202,7 @@ end
 function NUTS{AD}(
     n_iters::Int,
     δ::Float64;
-    max_depth::Int=5,
+    max_depth::Int=10,
     Δ_max::Float64=1000.0,
     init_ϵ::Float64=0.0,
     metricT=AHMC.DiagEuclideanMetric
@@ -294,7 +294,7 @@ function sample(
     end
 
     # Init h, prop and adaptor
-    step(model, spl, vi, Val(true); adaptor=adaptor)
+    step(model, spl, vi, Val(true); rng=rng, adaptor=adaptor)
 
     # Sampling using AHMC and store samples in `samples`
     steps!(model, spl, vi, samples; rng=rng, verbose=verbose, progress=progress)
@@ -346,6 +346,7 @@ function step(
     vi::VarInfo,
     is_first::Val{true};
     adaptor=AHMCAdaptor(spl.alg),
+    rng::AbstractRNG=GLOBAL_RNG,
     kwargs...
 )
     spl.selector.tag != :default && link!(vi, spl)
@@ -360,7 +361,7 @@ function step(
 
     # Find good eps if not provided one
     if init_ϵ == 0.0
-        init_ϵ = AHMC.find_good_eps(h, θ_init)
+        init_ϵ = AHMC.find_good_eps(rng, h, θ_init)
         @info "Found initial step size" init_ϵ
     end
     if AHMC.getϵ(adaptor) == 0.0
