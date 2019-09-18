@@ -12,10 +12,10 @@ export  vectorize,
         Sample,
         Chain,
         init,
-        vectorize
+        vectorize,
+        set_resume!
 
 include("helper.jl")
 include("robustinit.jl")
-include("io.jl")           # I/O
 
 end # module
